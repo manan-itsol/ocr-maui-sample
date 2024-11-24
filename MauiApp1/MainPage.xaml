@@ -6,14 +6,29 @@
     <ScrollView>
         <VerticalStackLayout
             Padding="30,0"
-            Spacing="25">
+            Spacing="20">
             <Image
                 Source="dotnet_bot.png"
                 HeightRequest="185"
                 Aspect="AspectFit"
                 SemanticProperties.Description="dot net bot in a race car number eight" />
+            <Button Text="Capture for OCR" Clicked="OnCapturePhotoClicked"/>
+            <Button Text="Pick For OCR" Clicked="OnPickPhotoClicked"/>
+            <HorizontalStackLayout>
+                <Switch x:Name="narrowLinesSwitch" />
+                <Label Text="Use Narrow Lines Algo" Margin="0,13,0,0"/>
+            </HorizontalStackLayout>
+            <Label Text="Transformed Results: "
+                   Style="{StaticResource Headline}"/>
 
-            <Label
+            <Label x:Name="lblOcrResults"/>
+
+            <Label Text="Results (Lines): "
+                   Style="{StaticResource Headline}"/>
+
+            <Label x:Name="lblOcrResultLines"/>
+
+            <!--<Label
                 Text="Hello, World!"
                 Style="{StaticResource Headline}"
                 SemanticProperties.HeadingLevel="Level1" />
@@ -29,7 +44,7 @@
                 Text="Click me" 
                 SemanticProperties.Hint="Counts the number of times you click"
                 Clicked="OnCounterClicked"
-                HorizontalOptions="Fill" />
+                HorizontalOptions="Fill" />-->
         </VerticalStackLayout>
     </ScrollView>
 
