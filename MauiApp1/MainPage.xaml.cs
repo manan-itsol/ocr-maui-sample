@@ -1,6 +1,6 @@
 ﻿using MauiApp1.Models;
-using Microsoft.Maui.Controls.Shapes;
 using Plugin.Maui.OCR;
+using SkiaSharp;
 using System.Text;
 
 namespace MauiApp1
@@ -64,6 +64,8 @@ namespace MauiApp1
 
             // Read the stream into the byte array
             await sourceStream.ReadAsync(imageData);
+
+            imageData = FixImageRotation(imageData);
 
             // Process the image data using the OCR service
             var ocrResult = await _ocrService.RecognizeTextAsync(imageData);
@@ -181,6 +183,66 @@ namespace MauiApp1
             return textExtractions;
         }
         #endregion helpers methods
+
+        #region Image Rotation
+
+        private byte[] FixImageRotation(byte[] imageBytes)
+        {
+            int rotation = GetImageRotation(imageBytes);
+
+            if (rotation == 90)
+            {
+                var rotatedBytes = RotateImageBy90Degrees(imageBytes);
+                return rotatedBytes;
+            }
+            else
+            {
+                return imageBytes;
+            }
+        }
+
+        private int GetImageRotation(byte[] imageBytes)
+        {
+            using var stream = new MemoryStream(imageBytes);
+            using var codec = SKCodec.Create(stream);
+
+            if (codec.EncodedOrigin == SKEncodedOrigin.TopLeft)
+                return 0;  // No rotation
+            if (codec.EncodedOrigin == SKEncodedOrigin.RightTop)
+                return 90;
+            if (codec.EncodedOrigin == SKEncodedOrigin.BottomRight)
+                return 180;
+            if (codec.EncodedOrigin == SKEncodedOrigin.LeftBottom)
+                return 270;
+
+            return 0;  // Default
+        }
+
+        private byte[] RotateImageBy90Degrees(byte[] imageBytes)
+        {
+            using var inputStream = new SKMemoryStream(imageBytes);
+            using var originalBitmap = SKBitmap.Decode(inputStream);
+
+            if (originalBitmap == null)
+                return imageBytes; // Return original if decoding fails
+
+            int newWidth = originalBitmap.Height;
+            int newHeight = originalBitmap.Width;
+
+            using var rotatedBitmap = new SKBitmap(newWidth, newHeight);
+            using var canvas = new SKCanvas(rotatedBitmap);
+
+            canvas.Translate(newWidth, 0);
+            canvas.RotateDegrees(90);
+            canvas.DrawBitmap(originalBitmap, 0, 0);
+
+            using var image = SKImage.FromBitmap(rotatedBitmap);
+            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+
+            return data.ToArray();
+        }
+
+        #endregion
     }
 
 }
